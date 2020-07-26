@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    {{ moment.include_jquery() }}
+    {{ moment.include_moment() }}
+<div class="container mt-3" id="fuck">
+
+
+
+    <div class="card mb-3" v-for="(hashtag, index) in hashtags">
+        <div class="card-body">
+
+            <span class="float-right" style="cursor:pointer" @click="deleteHashtag(index)">
+                X
+            </span>
+            <h4 class="card-title mb-3">Add Hashtag</h4>
+
+            <div class="hashtag-form d-inline">
+                <input type="text" class="form-control mb-2" placeholder="search" v-model="hashtag.search">
+                <input type="text" class="form-control mb-2" placeholder="hashtag" v-model="hashtag.hashtag">
+            </div>
+
+        </div>
+    </div>
+
+    <button class="btn btn-success mt-3 mb-5" @click="addHashtag">
+        new tag
+    </button>
+
+    <button class="btn btn-success mt-3 mb-5" @click="submitForm">
+        submit
+    </button>
+
+</div>
+
+<script>
+    var app = new Vue({
+        el: '#fuck',
+        data: {
+            hashtags: [
+                {% for row in tags %}
+                    {
+                    search: '{{ row['search'] }}',
+                    hashtag: '{{ row['hashtag'] }}'
+                    },
+                {% endfor %}
+            ]
+        },
+        methods: {
+            addHashtag() {
+                this.hashtags.push({
+                        search: '',
+                        hashtag: ''
+                })
+            },
+
+            deleteHashtag (index) {
+                this.hashtags.splice(index, 1)
+            },
+            submitForm: function() {
+                $.ajax({
+                type : "POST",
+                url : "/hashtags/post",
+                data: {'tags': this.hashtags},
+                });
+                console.log();
+            }
+        }
+    })
+</script>
+
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<div class="container d-flex justify-content-center">
+<div class="card mt-3 mr-2" id='fuck' style="width:60%">
+        <div class="card-body" style="height:90vh;overflow:scroll;">
+
+            {% for post in posts %}
+                {% if post.postedtw == True %}
+                {% set rssid = post.id %}
+                    {% if current_user.twitter_key != None %}
+
+                        <div style="float:left;" class="mr-2 mt-1">
+                            <img class="rounded-circle d-inline" src="{{ current_user.twitter_user_info.profile_image_url_https }}">
+                        </div>
+
+                        <div>
+                            <table>
+                                <tr>
+                                        <td class="d-inline">
+                                            <b>{{ current_user.twitter_user_info.name }}</b>
+                                            <p class="text-secondary d-inline"> @{{ current_user.twitter_user_info.screen_name }}</p>
+                                            <p class="text-secondary d-inline">&nbsp;·&nbsp; {{ moment(post.auto_post_datetime).fromNow() }}</p>
+
+                                                {% if post.character_count > 270 %}
+                                                <p class="text-danger d-inline">(Tweet Shortened)</p>
+                                                {% endif %}
+
+                                        </td>
+                                </tr>
+
+                    {% else %}
+
+                        <div style="float:left;" class="mr-2 mt-1">
+                            <img width='50px' class="rounded-circle d-inline" src="{{url_for('static', filename='twitter_bird.png')}}">
+                        </div>
+
+                        <div>
+                            <table>
+                                <tr>
+                                        <td class="d-inline">
+                                            <b>{{ current_user.username }}</b>
+                                            <p class="text-secondary d-inline"> @screen_name</p>
+                                            <p class="text-secondary d-inline">&nbsp;·&nbsp; {{ moment(post.auto_post_datetime).fromNow() }}</p>
+                                        </td>
+                                </tr>
+
+                    {% endif %}
+
+                               <tr>
+                                   <td>
+                                       {{ post.body }}
+                                       <p class="text-primary d-inline">{{ post.hashtags }}</p>
+
+                                                <a href="{{ post.url }}">{{ post.url }}</a>
+
+                                   </td>
+                               </tr>
+                                <tr>
+                                    <td>
+                                        <span  class="float-right" style="cursor:pointer" @click="deleteTweet({{ post.id }})">
+                                            REMOVE FROM HISTORY
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </div>
+
+
+
+                        <hr>
+                {% endif %}
+            {% endfor %}
+                                <p class="text-secondary d-flex justify-content-center">- End of history. -</p>
+            </div>
+        </div>
+    </div>
+    </div>
+
+<script>
+    var app = new Vue({
+        el: '#fuck',
+        methods: {
+            deleteTweet (tweetid) {
+                $.ajax({
+                type : "POST",
+                url : "/deletepost",
+                data: {'id': tweetid},
+                });
+                console.log();
+                location.reload();
+        },
+        metaTitle(metaUrl) {
+        var title = $("meta[property='og:title']").attr("content");
+
+        var url = $.get(metaUrl);
+
+        var output = $(url).find(title);
+
+        console.log(output);
+    }
+        }
+    })
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    ::-webkit-scrollbar {
+    width: 0px;  /* Remove scrollbar space */
+    background: transparent;  /* Optional: just make scrollbar invisible */
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<div class="container d-flex justify-content-center" >
+
+
+
+    <div class="card mt-3 mr-2 h-100" style="width:30%">
+        <div class="card-body">
+            {% if current_user.twitter_key != None %}
+                <table>
+                    <tr>
+                        <td><img class="rounded-circle" src="{{ current_user.twitter_user_info.profile_image_url_https }}"></td>
+                        <td><b>{{ current_user.twitter_user_info.name }}</b><br>
+                        @{{ current_user.twitter_user_info.screen_name }}</td>
+                    </tr>
+                </table>
+                <table>
+                    <tr>
+                       <td><p><a href="{{ url_for('removetoken') }}">Unlink Twitter</a></p></td>
+                    </tr>
+                </table>
+            {% endif %}
+
+            {% if current_user.twitter_key == None %}
+                <table>
+                    <tr>
+                        <td><img width='50px' class="rounded-circle mr-1" src="{{url_for('static', filename='twitter_bird.png')}}"></td>
+                        <td>
+                            <b class="pl-1">{{ current_user.username }}</b><br>
+                            <p class="text-secondary d-inline"> @screen_name</p>
+                        </td>
+                    </tr>
+                </table>
+                <a href="{{ url_for('auth') }}">Link Twitter</a>
+            {% endif %}
+
+            <table class="w-100">
+                <tr>
+                    <td><b>Start (UTC)</b></td><td align="right">{{ user.auto_post_active_start }}</td>
+                </tr>
+                <tr>
+                    <td><b>End (UTC)</b></td><td align="right">{{ user.auto_post_active_end }}</td>
+                </tr>
+                <tr>
+                    <td><b>Post Interval&nbsp;</b></td><td align="right">{{ user.auto_post_interval }}</td>
+                </tr>
+                <tr>
+                    <td><b>Refresh</b></td><td align="right">{{ user.auto_post_refresh }}</td>
+                </tr>
+                {% if user.last_refresh %}
+                    <tr>
+                        <td><b>Last Refresh</b></td><td align="right">{{ moment(user.last_refresh).fromNow() }}</td>
+                    </tr>
+                    <tr>
+                        <td><b>Next Refresh</b></td><td align="right">{{ moment(next_refresh).fromNow() }}</td>
+                    </tr>
+                {% endif %}
+
+                <tr>
+                    <td><b>Post Output</b></td><td align="right">{{ postoutput }} posts</td>
+                </tr>
+            </table>
+        </div>
+
+    </div>
+    <div class="card mt-3 mr-2" id='fuck' style="width:60%">
+        <div class="card-body" style="height:90vh;overflow:scroll;">
+        {% set counter = namespace(value=0) %}
+            {% for post in posts %}
+                {% if counter.value < 4 %}
+                    {% if post.postedtw != True %}
+                    {% set counter.value = counter.value + 1 %}
+                    {% set rssid = post.id %}
+                        {% if current_user.twitter_key != None %}
+
+                                <div style="float:left;" class="mr-2 mt-1">
+                                    <img class="rounded-circle d-inline" src="{{ current_user.twitter_user_info.profile_image_url_https }}">
+                                </div>
+
+                                <div>
+                                    <table>
+                                        <tr>
+                                                <td class="d-inline">
+                                                    <b>{{ current_user.twitter_user_info.name }}</b>
+                                                    <p class="text-secondary d-inline"> @{{ current_user.twitter_user_info.screen_name }}</p>
+                                                    <p class="text-secondary d-inline">&nbsp;·&nbsp; {{ moment(post.auto_post_datetime).fromNow() }}</p>
+
+                                                        {% if post.character_count > 270 %}
+                                                        <p class="text-danger d-inline">(Tweet Shortened)</p>
+                                                        {% endif %}
+
+                                                </td>
+                                        </tr>
+
+                            {% else %}
+
+                                <div style="float:left;" class="mr-2 mt-1">
+                                    <img width='50px' class="rounded-circle d-inline" src="{{url_for('static', filename='twitter_bird.png')}}">
+                                </div>
+
+                                <div>
+                                    <table>
+                                        <tr>
+                                                <td class="d-inline">
+                                                    <b>{{ current_user.username }}</b>
+                                                    <p class="text-secondary d-inline"> @screen_name</p>
+                                                    <p class="text-secondary d-inline">&nbsp;·&nbsp; {{ moment(post.auto_post_datetime).fromNow() }}</p>
+                                                </td>
+                                        </tr>
+
+                            {% endif %}
+
+                                       <tr>
+                                           <td>
+                                               {{ post.body }}
+                                               <p class="text-primary d-inline">{{ post.hashtags }}</p>
+
+                                               <!-- META DATA DISPLAY - quotes replacing jinja -->
+                                                    {% if post.meta_data != None %}
+                                                        <div class="card mt-2" style="border-radius:15px">
+                                                            <div style="border-radius:14px;min-height:120px;overflow:hidden;">
+                                                            <img  style="border-radius:14px;" class="mb-5" width="100%" src="{{ post.meta_data[0] }}">
+                                                            </div>
+                                                            <div class='p-2 align-bottom w-100' style="border-top:solid 1px #eee;border-radius:0px 0px 13px 13px;bottom:0;position:absolute;background:white;z-index:5;">
+                                                                <p class='d-inline' style="line-height:10px">{{ post.meta_data[1] }}<br></p>
+                                                                <p class='d-inline text-secondary' style="line-height:10px">{{ post.meta_data[2] }}...</p>
+
+                                                            </div>
+                                                        </div>
+                                                    {% else %}
+                                                        <a href="{{ post.url }}">{{ post.url }}</a>
+                                                    {% endif %}
+                                                   <!-- -->
+
+
+
+                                           </td>
+                                       </tr>
+                                        <tr>
+                                            <td>
+
+                                                <!-- POST NOW BUTTON
+                                                <span  class="float-right" style="cursor:pointer" @click="postTweet({{ post.id }})">
+                                                    {{ post.postedtw }} POST NOW
+                                                </span>
+                                                -->
+
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                </div>
+
+
+
+                                <hr>
+
+                        {% endif %}
+
+                    {% endif %}
+                {% endfor %}
+
+                                <p class="text-secondary d-flex justify-content-center">- End of queue. -</p>
+            </div>
+        </div>
+    </div>
+    <!--
+<script>
+    var app = new Vue({
+        el: '#fuck',
+        methods: {
+            postTweet (tweetid) {
+                $.ajax({
+                type : "POST",
+                url : "/setposted",
+                data: {'id': tweetid},
+                });
+                console.log();
+                location.reload();
+        },
+
+        }
+    })
+</script>
+-->
+
+{% endblock %}

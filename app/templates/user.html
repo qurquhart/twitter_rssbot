@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-3 d-flex justify-content-center">
+    <p>key: {{ user.twitter_key }}
+    <br>secret: {{ user.twitter_secret }}</p><br><br>
+    <div class="card" >
+         <div class="card-body">
+            <form action="" method="post">
+                <p>
+                    <b>POST TIMER SETTINGS</b><br><br>
+                    Interval (minutes): {{ form.interval.interval }}
+                    {% for error in form.interval.interval.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}
+                    <input class="btn btn-success" type="submit" name="submit-interval" value="Submit Interval">
+                </p>
+            </form>
+
+            <form action="" method="post">
+                <p>
+                    Post Times: {{ form.duration.time_start }} - {{ form.duration.time_end }}
+
+                    {% for error in form.duration.time_start.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}
+
+                    {% for error in form.duration.time_end.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}
+                    <input class="btn btn-success" type="submit" name="submit-duration" value="Submit Duration">
+                </p>
+            </form>
+
+            <form action="" method="post">
+                <p>
+                    Refresh Rate (minutes): {{ form.refresh.interval }}
+                    {% for error in form.refresh.interval.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}
+                    <input class="btn btn-success" type="submit" name="submit-refresh" value="Submit Refresh">
+                </p>
+            </form>
+        </div>
+    </div>
+</div>
+<!--
+        <form action="{{url_for('create_posts')}}" method="post">
+                <input type="hidden" name="_method" value="CREATE">
+                <input type="submit" value="Create Posts">
+        </form>
+        <br>
+        <form action="{{url_for('schedule_posts')}}" method="post">
+                <input type="hidden" name="_method" value="Schedule">
+                <input type="submit" value="Schedule Posts">
+        </form>
+
+
+    <hr>
+
+<h4 onload="timezone()">UTC -> Local Time</h4>
+        Datetime right now is:
+        <p>{{ dt }} (utc)</p>
+        <p><span id="timeNow"></span> (local)</p>
+        <script>
+            var elem = document.getElementById("timeNow")
+            var now = new Date();
+            var options = { month: 'short', day: '2-digit',
+                            hour: 'numeric', minute: '2-digit' };
+            elem.innerHTML = now.toLocaleString('en-us', options);
+        </script>
+        <script>
+            function timezone() {
+                $.ajax({
+                    type : "POST",
+                    url : "/process",
+                    data: {'tz': Date()},
+                    });
+            };
+        </script>
+-->
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    {{ moment.include_jquery() }}
+    {{ moment.include_moment() }}
+
+<div class="container mt-3" id="fuck">
+
+    <div class="card mb-3" v-for="(hashtag, index) in hashtags">
+        <div class="card-body">
+
+            <span class="float-right" style="cursor:pointer" @click="deleteHashtag(index)">
+                X
+            </span>
+            <h4 class="card-title mb-3">Add Hashtag</h4>
+
+            <div class="hashtag-form d-inline">
+                <input type="text" class="form-control mb-2" placeholder="search" v-model="hashtag.search">
+                <input type="text" class="form-control mb-2" placeholder="hashtag" v-model="hashtag.hashtag">
+            </div>
+
+        </div>
+    </div>
+
+    <button class="btn btn-success mt-3 mb-5" @click="addHashtag">
+        new tag
+    </button>
+
+    <button class="btn btn-success mt-3 mb-5" @click="submitForm">
+        submit
+    </button>
+
+</div>
+<script>
+    var app = new Vue({
+        el: '#fuck',
+        data: {
+            hashtags: [
+                {% for row in tags %}
+                    {
+                    search: '{{ row['search'] }}',
+                    hashtag: '{{ row['hashtag'] }}'
+                    },
+                {% endfor %}
+            ]
+        },
+        methods: {
+            addHashtag() {
+                this.hashtags.push({
+                        search: '',
+                        hashtag: ''
+                })
+            },
+
+            deleteHashtag (index) {
+                this.hashtags.splice(index, 1)
+            },
+            submitForm: function() {
+                $.ajax({
+                type : "POST",
+                url : "/hashtags/post",
+                data: {'tags': this.hashtags},
+                });
+                console.log();
+            }
+        }
+    })
+</script>
+{% endblock %}

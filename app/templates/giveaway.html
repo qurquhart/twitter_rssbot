@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-3">
+<p>
+    twitter giveaway page<br>
+    <br> grab twitter info
+    <br> select pinned tweet or paste link to tweet
+    <br> pull -current_user- followers
+    <br> pull tweet retweeters, favoriters, or both
+    <br> crossreference and add matches to list (display count of correct entries and list)
+    <br> random() to select winner
+    <br> tweet from winner selection twitter account with winner (proves it was legit random)
+    <br>     tweet will retweet the main tweet with winner
+</p>
+<hr>
+{% if tweet %}
+
+    <table style="background:#e8f4f8;">
+        <tr>
+        <td>
+            <td><img src="{{ tweet.user.profile_image_url_https }}"></td>
+            <td style="padding-right:10px;"><b>{{ tweet.user.name }}</b><br>
+            @{{ tweet.user.screen_name }}
+        </td>
+        <td style="border-left: 2px solid gray;">
+            &nbsp&nbsp&nbsp{{ tweet.text }}&nbsp&nbsp&nbsp&nbsp&nbsp
+        </td>
+        </tr>
+    </table>
+    <br>
+    <table>
+        <tr>
+        <th>Users that have retweeted and follow you</th>
+        </tr>
+    {% for user in retweeters %}
+            <tr>
+                <td>{{ user }}</td>
+            </tr>
+    {% endfor %}
+    </table>
+    <hr>
+
+{% endif %}
+                {% if current_user.twitter_key != None %}
+                <table>
+                    <tr>
+
+                        <td>
+                            <td><img src="{{ current_user.twitter_user_info.profile_image_url_https }}"></td>
+                            <td><b>{{ current_user.twitter_user_info.name }}</b><br>
+                            @{{ current_user.twitter_user_info.screen_name }}
+                        </td>
+                    </tr>
+                </table>
+                {% endif %}
+
+
+
+                <table>
+                {% for post in posts %}
+                        <tr>
+                            <td>
+                                <form action="{{url_for('giveaway_tweet', tweetid=post.id)}}" method="post">
+                                    <input type="hidden" name="_method" value="SELECT">
+                                    <input type="submit" value="Select">
+                                </form>
+                            </td>
+                            <td>
+                                {{ post.user.name }} @{{ post.user.screen_name }} {{ moment(post.created_at).fromNow() }} {{ post.retweeted }}
+                                <br>{{ post.text }}
+                            </td>
+                        </tr>
+                {% endfor %}
+                </table>
+</div>
+{% endblock %}
